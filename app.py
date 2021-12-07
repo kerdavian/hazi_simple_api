@@ -1,15 +1,20 @@
 from flask import Flask, render_template, request
 from flask.json import jsonify
+import pickle
 
 app = Flask(__name__)
 
-projects = [{
-    'name': 'my project',
-    'tasks': [{
-        'name': 'my_task',
-        'completed': False
-    }]
-}]
+# projects = [{
+#     'name': 'my project',
+#     'tasks': [{
+#         'name': 'my_task',
+#         'completed': False
+#     }]
+# }]
+
+projects = []
+with open("projects.pickle", "rb") as pickle_file:
+  projects = pickle.load(pickle_file)
 
 
 @app.route('/')
@@ -21,7 +26,7 @@ def home():
 @app.route('/project')
 def get_projects():
   # ez json obj-ben adja vissza az adatokat
-  return jsonify({'projects': projects})
+  return jsonify(projects)
 
 
 @app.route('/project/<string:name>')

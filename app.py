@@ -1,6 +1,15 @@
 from flask import Flask, render_template, request
 from flask.json import jsonify
 import pickle
+import uuid
+import json
+
+def save_data(data):
+  with open('projects.json', 'w') as json_file:
+    json.dump(data, json_file)
+    with open("projects.pickle", "wb") as pickle_file:
+      pickle.dump(data, pickle_file)
+
 
 app = Flask(__name__)
 
@@ -50,11 +59,18 @@ def get_all_task_in_project(name):
 
 @app.route('/project', methods=['POST'])
 def create_project():
+  new_project_id = uuid.uuid4().hex[:24]
+
   # lekérdezzuk a http requestbol az adatot
   request_data = request.get_json()
-  new_project = {'name': request_data['name'], 'tasks': request_data['tasks']}
+
+  new_project = {'name': request_data['name'], 'creation_date':request_data['creation_date'], 'completed': request_data['completed'], 'project_id': new_project_id,'tasks': request_data['tasks'],  }
   projects.append(new_project)
-  return jsonify(new_project)
+
+  save_data({"projects": projects})
+  
+  # return jsonify(new_project)
+  return jsonify({ 'message': f'project created with id: {new_project_id}' })
 
 
 @app.route('/project/<string:name>/task', methods=['POST'])

@@ -11,4 +11,7 @@ import json
 with open("projects.pickle", "rb") as pickle_file:
   pkl = pickle.load(pickle_file)
 
-print(pkl)
+print(pkl['projects'])
+
+  # for p in pkl["projects"]:
+  #   print(p["project_id"])

@@ -14,7 +14,8 @@ app = Flask(__name__)
 
 projects = []
 with open("projects.pickle", "rb") as pickle_file:
-  projects = pickle.load(pickle_file)
+  pkl = pickle.load(pickle_file)
+  projects = pkl["projects"]
 
 
 @app.route('/')
@@ -26,15 +27,17 @@ def home():
 @app.route('/project')
 def get_projects():
   # ez json obj-ben adja vissza az adatokat
-  return jsonify(projects)
+  # return jsonify(projects) ezzel is működik
+  return jsonify({"projects":projects})
 
 
-@app.route('/project/<string:name>')
-def get_project(name):
+
+@app.route('/project/<string:id>')
+def get_project(id):
   for project in projects:
-    if project['name'] == name:
+    if project["project_id"] == id:
       return jsonify(project)
-    return jsonify({'message': 'project is not found!'})
+  return jsonify({'message': 'project is not found!'})
 
 
 @app.route('/project/<string:name>/task')
@@ -69,4 +72,4 @@ def add_task_to_projetc(name):
 
 
 if __name__ == '__main__':
-  app.run(host='0.0.0.0', port=5000, debug=True)
+  app.run(port=5000, debug=True)

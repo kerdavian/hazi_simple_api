@@ -1,8 +1,10 @@
+from os import error
 from flask import Flask, render_template, request
 from flask.json import jsonify
 import pickle
 import uuid
 import json
+
 
 def save_data(data):
   with open('projects.json', 'w') as json_file:
@@ -10,12 +12,53 @@ def save_data(data):
     with open("projects.pickle", "wb") as pickle_file:
       pickle.dump(data, pickle_file)
 
+
 def which_project(projects, id):
   for i in range(len(projects)-1):
     print(projects[i]['project_id'])
     if projects[i]['project_id'] == id:
       return i
 
+
+def filter_list_of_dicts(list_of_dicts, fields):
+  filtered = []
+  for dict in list_of_dicts:
+    in_dict = {}
+    for key, value in dict.items():
+      if key in fields:
+        in_dict[key] = value
+    filtered.append(in_dict)
+  
+  return filtered
+
+
+def try_check(body_request, fields):
+  '''
+  Levizsgállja 
+  hogy van-e 'fields' key,
+  hogy üres-e body,
+  hogy a megadott a fieldek valóban léteznek-e,
+  hogy nem üres listát küldtünk-e
+  Ha itt bárhol hibát kapunk akkor visszadja a teljes listát
+  '''
+  body_request['fields'] == 'fields'
+  request.get_json() == None
+  filtered_fields = []
+  for field in body_request['fields']:
+    if field in fields:
+      filtered_fields.append(field)
+  
+  # ha üres a 'filtered_fields' viszatérünk egy nullával
+  if len(filtered_fields) == 0:
+    return 0
+  else:
+    # egyébként a szűrt listát adjuk vissza
+    return filter_list_of_dicts(projects, filtered_fields)
+
+
+project_fields = ["name","creation_date", "completed", "project_id", "tasks"]
+
+task_fields = ["name", "completed","checklist", "task_id"]
 
 
 app = Flask(__name__)
@@ -43,9 +86,16 @@ def home():
 @app.route('/project')
 def get_projects():
   # ez json obj-ben adja vissza az adatokat
-  # return jsonify(projects) ezzel is működik
-  return jsonify({"projects":projects})
+  body_request = request.get_json()
+  try:
+    fields = try_check(body_request, project_fields)
+    # ha üres a fields
+    if fields == 0:
+      raise error
+  except:
+    return jsonify({"projects":projects})
 
+  return jsonify({"projects":fields})
 
 
 @app.route('/project/<string:id>')
@@ -56,12 +106,25 @@ def get_project(id):
   return jsonify({'message': 'project is not found!'})
 
 
-@app.route('/project/<string:name>/task')
-def get_all_task_in_project(name):
+@app.route('/project/<string:id>/task')
+def get_all_task_in_project(id):
   for project in projects:
-    if project['name'] == name:
-      return jsonify({'tasks': project['tasks']})
-    return jsonify({'message': 'project is not found!'})
+    if project['project_id'] == id:
+      body_request = request.get_json()
+      try:
+        fields = try_check(body_request, task_fields)
+         #ha üres a fields
+        if fields == 0:
+          raise error
+      except:
+        return jsonify({"tasks":project['tasks']})
+
+  return jsonify({"projects":fields})
+      
+ 
+      
+
+  return jsonify({'message': 'project is not found!'})
 
 
 @app.route('/project', methods=['POST'])

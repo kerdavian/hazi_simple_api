@@ -8,11 +8,12 @@ with open("projects.json") as json_file:
     pickle.dump(data, pickle_file)
 
 
-with open("projects.pickle", "rb") as pickle_file:
-  pkl = pickle.load(pickle_file)
+# with open("projects.pickle", "rb") as pickle_file:
+#   pkl = pickle.load(pickle_file)
  
-# # # # print(pkl['projects'])
+# # # # # print(pkl['projects'])
 
-  for p in pkl["projects"]:
-    print(p["project_id"], p["completed"])
+#   for p in pkl["projects"]:
+#     print(p["project_id"], p["completed"])
+
 

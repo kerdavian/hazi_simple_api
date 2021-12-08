@@ -111,7 +111,7 @@ def project_complete(id):
 
       projects[which_project(projects, id)] = completed_project
 
-      # save_data({'projects': projects})
+      save_data({'projects': projects})
 
       return jsonify(completed_project)
 

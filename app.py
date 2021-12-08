@@ -10,6 +10,13 @@ def save_data(data):
     with open("projects.pickle", "wb") as pickle_file:
       pickle.dump(data, pickle_file)
 
+def which_project(projects, id):
+  for i in range(len(projects)-1):
+    print(projects[i]['project_id'])
+    if projects[i]['project_id'] == id:
+      return i
+
+
 
 app = Flask(__name__)
 
@@ -85,8 +92,11 @@ def add_task_to_projetc(id):
           'completed': request_data['completed'],
           'checklist': request_data['checklist']
       }
-      project['tasks'].append(new_task)
-      return jsonify(new_task_id)
+      
+      projects[which_project(projects, id)]['tasks'].append(new_task)
+      save_data({'projects': projects})
+
+      return jsonify({ 'message': f'new task was created with id: {new_task_id}' })
   return jsonify({'message': 'project is not found!'})
 
 @app.route('/project/<string:id>/complete',methods=['POST'])
@@ -99,12 +109,9 @@ def project_complete(id):
     
       completed_project = {'name': project['name'], 'creation_date' : project['creation_date'], 'completed' : request_data['completed'], 'project_id' : project['project_id'],'tasks': project['tasks']}
 
-      #Ha lesz még olyan feladat,ahol cserélni  kell a listából akkor függvényt csinálok belőle
-      for i in range(len(projects)):
-        if projects[i]['project_id'] == id:
-          projects[i] = completed_project
+      projects[which_project(projects, id)] = completed_project
 
-      save_data({'projects': projects})
+      # save_data({'projects': projects})
 
       return jsonify(completed_project)
 

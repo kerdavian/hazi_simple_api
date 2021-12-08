@@ -86,6 +86,28 @@ def add_task_to_projetc(name):
       return jsonify(new_task)
   return jsonify({'message': 'project is not found!'})
 
+@app.route('/project/<string:id>/complete',methods=['POST'])
+def project_complete(id):
+  request_data =  request.get_json()
+  for project in projects:
+    if project['project_id'] == id:
+      if project['completed'] == request_data['completed']: #Most akkor is 200-al tér vissza, ha False-ról Falsra állítottak egy projectet
+        return "", 200
+    
+      completed_project = {'name': project['name'], 'creation_date' : project['creation_date'], 'completed' : request_data['completed'], 'project_id' : project['project_id'],'tasks': project['tasks']}
+
+      #Ha lesz még olyan feladat,ahol törölni kell a listából akkor függvényt csinálok belőle
+      for i in range(len(projects)):
+        if projects[i]['project_id'] == id:
+          del projects[i]
+
+      projects.append(completed_project)
+      save_data({'projects': projects})
+
+      return jsonify(completed_project)
+
+
+
 
 if __name__ == '__main__':
   app.run(port=5000, debug=True)

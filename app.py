@@ -73,17 +73,20 @@ def create_project():
   return jsonify({ 'message': f'project created with id: {new_project_id}' })
 
 
-@app.route('/project/<string:name>/task', methods=['POST'])
-def add_task_to_projetc(name):
+@app.route('/project/<string:id>/task', methods=['POST'])
+def add_task_to_projetc(id):
   request_data = request.get_json()
   for project in projects:
-    if project['name'] == name:
+    if project['project_id'] == id:
+      new_task_id = uuid.uuid4().hex[:24]
       new_task = {
           'name': request_data['name'],
-          'completed': request_data['completed']
+          'task_id':new_task_id,
+          'completed': request_data['completed'],
+          'checklist': request_data['checklist']
       }
       project['tasks'].append(new_task)
-      return jsonify(new_task)
+      return jsonify(new_task_id)
   return jsonify({'message': 'project is not found!'})
 
 @app.route('/project/<string:id>/complete',methods=['POST'])
@@ -96,12 +99,11 @@ def project_complete(id):
     
       completed_project = {'name': project['name'], 'creation_date' : project['creation_date'], 'completed' : request_data['completed'], 'project_id' : project['project_id'],'tasks': project['tasks']}
 
-      #Ha lesz még olyan feladat,ahol törölni kell a listából akkor függvényt csinálok belőle
+      #Ha lesz még olyan feladat,ahol cserélni  kell a listából akkor függvényt csinálok belőle
       for i in range(len(projects)):
         if projects[i]['project_id'] == id:
-          del projects[i]
+          projects[i] = completed_project
 
-      projects.append(completed_project)
       save_data({'projects': projects})
 
       return jsonify(completed_project)
